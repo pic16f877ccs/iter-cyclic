@@ -1,0 +1,10 @@
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use iter_cyclic::range_skip;
+
+fn criterion_benchmark(c: &mut Criterion) {
+    c.bench_function("range_skip", |b| b.iter(|| range_skip(black_box(0u32)..black_box(1), black_box(1))));
+}
+
+criterion_group!(benches, criterion_benchmark);
+criterion_main!(benches);
+
