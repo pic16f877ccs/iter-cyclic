@@ -12,7 +12,18 @@ with a skip of n elements.
  - skip of n elements.
  - **Panic** if value skip conversion to output type error.
  
-#### Short example
+#### Usage
+
+##### Add this to your Cargo.toml:
+```
+[dependencies]
+iter-cyclic = { git = "https://github.com/pic16f877ccs/iter-cyclic", version = "0.1.0" }
+```
+#### Or with cargo
+```
+cargo add iter-cyclic --git "https://github.com/pic16f877ccs/iter-cyclic"
+```
+#### Example
 ```
  use iter_cyclic::range_skip;
    
