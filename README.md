@@ -3,16 +3,16 @@
   3  - Creates a new iterator that sequentially outputs a value in the range
   4 with a skip of n elements.
   5 
-  6 #### Range
+  6 ### Range
   7  - **start** - the lower bound of the range (inclusive).  
   8  - **end** - the upper bound of the range (inclusive).
   9  - If the start value is greater than the end value, **panic.**
  10    
- 11 #### Skip
+ 11 ### Skip
  12  - skip of n elements.
  13  - **Panic** if value skip conversion to output type error.
  14  
- 15 #### Short example                                                                                                                                       
+ 15 ### Short example                                                                                                                                       
  16 ```
  17    use iter_cyclic::range_skip;
  18    
