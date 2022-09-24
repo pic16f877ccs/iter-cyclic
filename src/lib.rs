@@ -1,4 +1,5 @@
 use num::{CheckedAdd, CheckedSub, One, Zero};
+use num_convert::{TryFromByAdd, TryToByAdd};
 use std::cmp::PartialOrd;
 use std::fmt::{Debug, Display};
 use std::ops::{AddAssign, Range};
@@ -80,8 +81,8 @@ where
 /// Creates a new iterator that sequentially outputs a value in the range
 /// with a skip of n elements.
 /// Range,
-///   start - the lower bound of the range (inclusive).
-///   end - the upper bound of the range (inclusive).
+///  start - the lower bound of the range (inclusive).
+///  end - the upper bound of the range (inclusive).
 /// Skip,
 ///  skip of n elements.
 ///
@@ -103,3 +104,85 @@ where
 {
     RangeSkip::new(range, skip)
 }
+
+#[derive(Copy, Clone, Debug)]
+pub struct RangeStep<T> {
+    start: T,
+    stop: T,
+    start_usize: usize,
+    stop_usize: usize,
+    step: usize,
+    step_next: usize,
+    flag: bool,
+}
+
+impl<T> Iterator for RangeStep<T>
+where
+    T: Clone
+        + Copy
+        + Clone
+        + Debug
+        + TryToByAdd
+        + TryFromByAdd
+        + One
+        + AddAssign
+        + CheckedAdd
+        + PartialEq,
+{
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.flag {
+            if self.step == 0 {
+                return None;
+            }
+            self.flag = false;
+            return Some(self.start);
+        }
+
+        if self.start == self.stop {
+            if let Some(step_next) = self.step_next.checked_add(self.step) {
+                self.step_next = step_next;
+                match <T as TryFromByAdd>::try_from_usize(self.step_next) {
+                    Some(_) => {
+                        self.start_usize += self.step;
+                        self.stop_usize += self.step;
+                        self.start = <T as TryFromByAdd>::try_from_usize(self.start_usize).unwrap();
+                        self.stop = <T as TryFromByAdd>::try_from_usize(self.stop_usize).unwrap();
+                        return Some(self.start);
+                    }
+                    None => {
+                        return None;
+                    }
+                }
+            } else {
+                return None;
+            }
+        }
+        self.start += T::one();
+        Some(self.start)
+    }
+}
+
+pub fn range_step<T>(start: T, stop: T, step: usize) -> RangeStep<T>
+where
+    T: Clone + Copy + Debug + TryToByAdd + TryFromByAdd,
+{
+    let start_usize = start.try_into_usize().unwrap();
+    let stop_usize = stop.try_into_usize().unwrap();
+    let _ = <T as TryFromByAdd>::try_from_usize(step).unwrap();
+
+    RangeStep {
+        start,
+        stop,
+        start_usize,
+        stop_usize,
+        step: if start_usize > stop_usize || stop_usize > step {
+            0
+        } else {
+            step
+        },
+        step_next: step,
+        flag: true,
+    }
+}
+
