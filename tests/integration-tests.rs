@@ -116,7 +116,7 @@ mod range_step {
     #[test]
     fn range_step_test_i8_a() {
         assert_eq!(
-            range_step(i8::MIN, i8::MAX, u8::MAX as usize).collect::<Vec<_>>(),
+            range_step(i8::MIN, i8::MAX, 256).collect::<Vec<_>>(),
             (i8::MIN..=i8::MAX).collect::<Vec<_>>()
         );
     }
@@ -149,6 +149,14 @@ mod range_step {
     }
 
     #[test]
+    fn range_step_test_i8_g() {
+        assert_eq!(
+            range_step(i8::MIN + 1, i8::MAX - 1, u8::MAX as usize).collect::<Vec<_>>(),
+            (i8::MIN + 1..i8::MAX).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
     fn range_step_test_i8_e() {
         assert_eq!(
             range_step(i8::MIN, i8::MIN, 86).collect::<Vec<_>>(),
@@ -157,26 +165,27 @@ mod range_step {
     }
 
     #[test]
-    fn range_step_test_u8() {
+    fn range_step_test_u8_a() {
         assert_eq!(
-            range_step(u8::MIN, u8::MAX, u8::MAX as usize).collect::<Vec<_>>(),
+            range_step(u8::MIN, u8::MAX, 256).collect::<Vec<_>>(),
             (u8::MIN..=u8::MAX).collect::<Vec<_>>()
         );
     }
 
     #[test]
-    fn range_step_test_u8_r() {
+    fn range_step_test_u8_b() {
         assert_eq!(
-            range_step(u8::MIN + 1, u8::MAX - 1, u8::MAX as usize).collect::<Vec<_>>(),
-            (u8::MIN + 1..u8::MAX).collect::<Vec<_>>()
+            range_step(u8::MIN, 50, 51).collect::<Vec<_>>(),
+            (u8::MIN..u8::MAX).collect::<Vec<_>>()
         );
     }
 
     #[test]
-    fn range_step_test_i8_r() {
+    fn range_step_test_u8_c() {
         assert_eq!(
-            range_step(i8::MIN + 1, i8::MAX - 1, u8::MAX as usize).collect::<Vec<_>>(),
-            (i8::MIN + 1..i8::MAX).collect::<Vec<_>>()
+            range_step(1, u8::MAX - 1, u8::MAX as usize).collect::<Vec<_>>(),
+            (1..u8::MAX).collect::<Vec<_>>()
         );
     }
+
 }

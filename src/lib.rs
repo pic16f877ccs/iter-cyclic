@@ -169,14 +169,14 @@ where
 {
     let start_usize = start.try_into_usize().unwrap();
     let stop_usize = stop.try_into_usize().unwrap();
-    let _ = <T as TryFromByAdd>::try_from_usize(step).unwrap();
+    let _ = <T as TryFromByAdd>::try_from_usize(step -1 ).unwrap();
 
     RangeStep {
         start,
         stop,
         start_usize,
         stop_usize,
-        step: if start_usize > stop_usize || stop_usize > step {
+        step: if start_usize > stop_usize || stop_usize >= step {
             0
         } else {
             step
