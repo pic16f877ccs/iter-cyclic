@@ -186,3 +186,59 @@ where
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct RangeStepIdx {
+    start: usize,
+    start_next: usize,
+    stop: usize,
+    step: usize,
+    step_next: usize,
+    end: usize,
+    once_flag: bool,
+}
+
+impl Iterator for RangeStepIdx {
+    type Item = usize;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.once_flag {
+            if self.step == 0 {
+                return None;
+            }
+            self.once_flag = false;
+            return Some(self.start);
+        }
+
+        if self.start == self.stop {
+            self.step_next += self.step;
+            if self.step_next > self.end {
+                return None;
+            }
+            self.start_next += self.step;
+            self.start = self.start_next;
+            self.stop += self.step;
+            return Some(self.start);
+        }
+
+        self.start += 1;
+        Some(self.start)
+    }
+}
+
+#[inline]
+pub fn range_step_idx(start: usize, stop: usize, step: usize, end: usize) -> RangeStepIdx {
+    RangeStepIdx {
+        start,
+        start_next: start,
+        stop,
+        step: if start > stop || stop >= step || step > end {
+            0
+        } else {
+            step
+        },
+        step_next: step,
+        end,
+        once_flag: true,
+    }
+}
