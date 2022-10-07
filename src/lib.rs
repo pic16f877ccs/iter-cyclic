@@ -169,7 +169,7 @@ where
 {
     let start_usize = start.try_into_usize().unwrap();
     let stop_usize = stop.try_into_usize().unwrap();
-    let _ = <T as TryFromByAdd>::try_from_usize(step -1 ).unwrap();
+    let _ = <T as TryFromByAdd>::try_from_usize(step - 1).unwrap();
 
     RangeStep {
         start,
@@ -211,10 +211,15 @@ impl Iterator for RangeStepIdx {
         }
 
         if self.start == self.stop {
-            self.step_next += self.step;
-            if self.step_next > self.end {
+            if let Some(next_step) = self.step_next.checked_add(self.step) {
+                self.step_next = next_step;
+                if self.step_next > self.end {
+                    return None;
+                }
+            } else {
                 return None;
             }
+
             self.start_next += self.step;
             self.start = self.start_next;
             self.stop += self.step;
