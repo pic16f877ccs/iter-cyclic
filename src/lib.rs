@@ -57,7 +57,7 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        if self.flag == true {
+        if self.flag {
             self.flag = false;
             return Some(self.start);
         }
@@ -74,7 +74,7 @@ where
             };
         }
         self.start += T::one();
-        return Some(self.start);
+        Some(self.start)
     }
 }
 ///
@@ -186,7 +186,7 @@ where
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 pub struct RangeStepIdx {
     start: usize,
     start_next: usize,
