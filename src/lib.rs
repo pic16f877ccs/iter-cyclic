@@ -3,6 +3,7 @@ use num_convert::{TryFromByAdd, TryToByAdd};
 use std::cmp::PartialOrd;
 use std::fmt::{Debug, Display};
 use std::ops::{AddAssign, Range};
+use std::iter::Map;
 
 #[derive(Debug, Clone)]
 pub struct RangeSkip<T> {
@@ -77,9 +78,9 @@ where
         Some(self.start)
     }
 }
-///
 /// Creates a new iterator that sequentially outputs a value in the range
 /// with a skip of n elements.
+///
 /// Range,
 ///  start - the lower bound of the range (inclusive).
 ///  end - the upper bound of the range (inclusive).
@@ -163,6 +164,22 @@ where
     }
 }
 
+/// Creates a new iterator that sequentially outputs a value in the range
+/// with a step of n elements.
+///
+/// Range,
+///  start - the lower bound of the range (inclusive).
+///  end - the upper bound of the range (inclusive).
+/// Step,
+///  step of n elements.
+///
+///```
+/// use iter_cyclic::range_step;
+///
+/// let vec: Vec<u8> = range_step(0, 5, 20).take(12).collect();
+/// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 20, 21, 22, 23, 24, 25]);
+///
+///```
 pub fn range_step<T>(start: T, stop: T, step: usize) -> RangeStep<T>
 where
     T: Clone + Copy + Debug + TryToByAdd + TryFromByAdd,
@@ -245,5 +262,121 @@ pub fn range_step_idx(start: usize, stop: usize, step: usize, end: usize) -> Ran
         step_next: step,
         end,
         once_flag: true,
+    }
+}
+
+pub trait RangeStepVec<T> {
+    fn range_step_val(&mut self, start: usize, stop: usize, step: usize, val: T);
+    fn range_step_combine(&mut self, start: usize, stop: usize, step: usize, iter: impl Iterator<Item = T>);
+    fn range_step_vec(&self, start: usize, stop: usize, step: usize) -> Vec<T>;
+    fn range_step_iter(&self, start: usize, stop: usize, step: usize) ->  Map<RangeStepIdx, Box<dyn Fn(usize) -> T + '_>>;
+}
+
+impl<T> RangeStepVec<T> for Vec<T>
+where
+    T: Copy,
+{
+    #[inline]
+    fn range_step_val(&mut self, start: usize, stop: usize, step: usize, val: T) {
+        range_step_idx(start, stop, step, self.len()).for_each(|idx| {
+            self[idx] = val;
+        })
+    }
+
+    #[inline]
+    fn range_step_combine(&mut self, start: usize, stop: usize, step: usize, mut iter: impl Iterator<Item = T>) {
+        for idx in range_step_idx(start, stop, step, self.len()) {
+            self[idx] = if let Some(val) = iter.next() { val } else { break; };
+        }
+    }
+
+    #[inline]
+    fn range_step_vec(&self, start: usize, stop: usize, step: usize) -> Vec<T> {
+        let mut vec: Vec<T> = Vec::new();
+        for idx in range_step_idx(start, stop, step, self.len()) {
+            vec.push(self[idx]);
+            //vec.push(unsafe { *self.get_unchecked(idx) });
+        }
+        vec
+    }
+
+    #[inline]
+    fn range_step_iter(&self, start: usize, stop: usize, step: usize) ->  Map<RangeStepIdx, Box<dyn Fn(usize) -> T + '_>> {
+        range_step_idx(start, stop, step, self.len()).map(Box::new(|idx| self[idx]))
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct RangeStepVecIter<T: Copy> {
+    vec: Vec<T>,
+    start: usize,
+    start_next: usize,
+    stop: usize,
+    step: usize,
+    step_next: usize,
+    end: usize,
+    once_flag: bool,
+}
+
+impl<T: Copy> Iterator for RangeStepVecIter<T> {
+    type Item = T;
+
+    #[inline]
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.once_flag {
+            if self.step == 0 {
+                return None;
+            }
+            self.once_flag = false;
+            return Some(self.vec[self.start]);
+        }
+
+        if self.start == self.stop {
+            if let Some(next_step) = self.step_next.checked_add(self.step) {
+                self.step_next = next_step;
+                if self.step_next > self.end {
+                    return None;
+                }
+            } else {
+                return None;
+            }
+
+            self.start_next += self.step;
+            self.start = self.start_next;
+            self.stop += self.step;
+            return Some(self.vec[self.start]);
+        }
+
+        self.start += 1;
+        Some(self.vec[self.start])
+    }
+}
+
+
+pub trait RangeStepIter<T: Copy> {
+    fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T>;
+}
+
+impl<T> RangeStepIter<T> for Vec<T>
+where
+    T: Copy + 'static,
+{
+    #[inline]
+    fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T> {
+        let end = self.len();
+        RangeStepVecIter {
+            vec: self,
+            start,
+            start_next: start,
+            stop,
+            step: if start > stop || stop >= step || step > end {
+                0
+            } else {
+                step
+            },
+            step_next: step,
+            end,
+            once_flag: true,
+        }
     }
 }
