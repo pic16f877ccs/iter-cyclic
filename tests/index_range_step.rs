@@ -25,6 +25,7 @@ fn step_gt_end() {
     assert_eq!((1..0).collect::<Vec<_>>(), range_step_idx(0, 6, 256, 255).collect::<Vec<_>>());
 }
 
+#[test]
 fn step_eq_end() {
     assert_eq!((0..255).collect::<Vec<_>>(), range_step_idx(0, 254, 255, 255).collect::<Vec<_>>());
 }

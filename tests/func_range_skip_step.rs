@@ -106,7 +106,7 @@ mod range_skip {
     #[test]
     #[should_panic(expected = "expected conversion to succeed")]
     fn input_value_conversion() {
-        range_skip(1_u8..10, 256).collect::<Vec<_>>();
+        range_skip(1_u8..10, 256);
     }
 }
 
