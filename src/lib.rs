@@ -1,3 +1,11 @@
+#![forbid(unsafe_code)]
+#![warn(
+    missing_docs,
+    missing_debug_implementations,
+    missing_copy_implementations,
+    rustdoc::broken_intra_doc_links
+)]
+
 use num::{CheckedAdd, CheckedSub, One, Zero};
 use num_convert::{TryFromByAdd, TryToByAdd};
 use std::cmp::PartialOrd;
@@ -5,6 +13,7 @@ use std::fmt::{Debug, Display};
 use std::ops::{AddAssign, Range};
 use std::iter::Map;
 
+/// An iterator that sequentially outputs a value in a range skipping n elements.
 #[derive(Debug, Clone)]
 pub struct RangeSkip<T> {
     start: T,
@@ -106,6 +115,7 @@ where
     RangeSkip::new(range, skip)
 }
 
+/// An iterator that sequentially outputs a value in a range in increments of n elements.
 #[derive(Copy, Clone, Debug)]
 pub struct RangeStep<T> {
     start: T,
@@ -203,6 +213,7 @@ where
     }
 }
 
+/// An iterator that sequentially outputs a value in a range in increments of n elements of type usize.
 #[derive(Clone, Copy, Debug)]
 pub struct RangeStepIdx {
     start: usize,
@@ -248,6 +259,24 @@ impl Iterator for RangeStepIdx {
     }
 }
 
+/// Creates a new iterator that sequentially outputs a value in the range with a step of n elements of type usize.
+///
+/// Range,
+///  start - the lower bound of the range (inclusive).
+///  end - the upper bound of the range (inclusive).
+/// Step,
+///  step of n elements.
+/// End,
+///  iterator length.
+///
+///```
+/// use iter_cyclic::range_step_idx;
+///
+/// let mut vec: Vec<u8> = (0..=21).collect();
+/// range_step_idx(0, 2, 7, vec.len()).for_each(|idx| { vec[idx] += 10; });
+/// assert_eq!(vec, [10, 11, 12, 3, 4, 5, 6, 17, 18, 19, 10, 11, 12, 13, 24, 25, 26, 17, 18, 19, 20, 21]);
+///
+///```
 #[inline]
 pub fn range_step_idx(start: usize, stop: usize, step: usize, end: usize) -> RangeStepIdx {
     RangeStepIdx {
@@ -380,3 +409,4 @@ where
         }
     }
 }
+
