@@ -29,6 +29,7 @@ where
     usize: TryInto<T>,
     <usize as TryInto<T>>::Error: Debug,
 {
+    #[inline]
     fn new(range: Range<T>, skip: usize) -> Self {
         let Range { start, end } = range;
         if start > end {
@@ -66,6 +67,7 @@ where
 {
     type Item = T;
 
+    #[inline]
     fn next(&mut self) -> Option<T> {
         if self.flag {
             self.flag = false;
@@ -106,6 +108,7 @@ where
 /// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 206, 207, 208, 209, 210, 211]);
 ///
 ///```
+#[inline]
 pub fn range_skip<T>(range: Range<T>, skip: usize) -> RangeSkip<T>
 where
     T: PartialOrd + Copy + Display + CheckedAdd + CheckedSub + One + Zero,
@@ -141,6 +144,8 @@ where
         + PartialEq,
 {
     type Item = T;
+
+    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         if self.flag {
             if self.step == 0 {
@@ -190,6 +195,7 @@ where
 /// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 20, 21, 22, 23, 24, 25]);
 ///
 ///```
+#[inline]
 pub fn range_step<T>(start: T, stop: T, step: usize) -> RangeStep<T>
 where
     T: Clone + Copy + Debug + TryToByAdd + TryFromByAdd,
