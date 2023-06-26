@@ -89,11 +89,11 @@ where
         Some(self.start)
     }
 }
-/// Creates a new iterator that sequentially outputs a value in the range
-/// with a skip of n elements.
+/// Creates an iterator that sequentially outputs a value in the range
+/// with a skipping of n elements.
 ///
 /// Range,
-///  start - the lower bound of the range (inclusive).
+///  start - the lower bound of the range (inclusive),
 ///  end - the upper bound of the range (inclusive).
 /// Skip,
 ///  skip of n elements.
@@ -179,11 +179,11 @@ where
     }
 }
 
-/// Creates a new iterator that sequentially outputs a value in the range
+/// Creates an iterator that sequentially outputs a value in the range
 /// with a step of n elements.
 ///
 /// Range,
-///  start - the lower bound of the range (inclusive).
+///  start - the lower bound of the range (inclusive),
 ///  end - the upper bound of the range (inclusive).
 /// Step,
 ///  step of n elements.
@@ -265,10 +265,10 @@ impl Iterator for RangeStepIdx {
     }
 }
 
-/// Creates a new iterator that sequentially outputs a value in the range with a step of n elements of type usize.
+/// Creates an iterator that sequentially outputs a value in the range with a step of n elements of type usize.
 ///
 /// Range,
-///  start - the lower bound of the range (inclusive).
+///  start - the lower bound of the range (inclusive),
 ///  end - the upper bound of the range (inclusive).
 /// Step,
 ///  step of n elements.
@@ -283,6 +283,8 @@ impl Iterator for RangeStepIdx {
 /// assert_eq!(vec, [10, 11, 12, 3, 4, 5, 6, 17, 18, 19, 10, 11, 12, 13, 24, 25, 26, 17, 18, 19, 20, 21]);
 ///
 ///```
+
+/// Creates an iterator of type usize.
 #[inline]
 pub fn range_step_idx(start: usize, stop: usize, step: usize, end: usize) -> RangeStepIdx {
     RangeStepIdx {
@@ -341,6 +343,7 @@ where
     }
 }
 
+/// An iterator created from a vector.
 #[derive(Clone, Debug)]
 pub struct RangeStepVecIter<T: Copy> {
     vec: Vec<T>,
@@ -388,6 +391,23 @@ impl<T: Copy> Iterator for RangeStepVecIter<T> {
 }
 
 
+/// An iterator created from a vector that sequentially outputs a value in the range with a step of n elements.
+///
+/// Without dynamic dispatch.
+/// Range,
+///  start - the lower bound of the range (inclusive),
+///  end - the upper bound of the range (inclusive).
+/// Step,
+///  step of n elements.
+///
+///```
+/// use iter_cyclic::RangeStepIter;
+///
+/// let vec_src: Vec<u8> = (0..21).collect();
+/// let vec = vec_src.range_step_iter(0, 2, 5).collect::<Vec<_>>();
+/// assert_eq!(vec, [0, 1, 2, 5, 6, 7, 10, 11, 12, 15, 16, 17]);
+///
+///```
 pub trait RangeStepIter<T: Copy> {
     fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T>;
 }
@@ -396,6 +416,7 @@ impl<T> RangeStepIter<T> for Vec<T>
 where
     T: Copy + 'static,
 {
+    /// Creates an iterator from a vector.
     #[inline]
     fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T> {
         let end = self.len();
