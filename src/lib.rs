@@ -5,7 +5,7 @@
     missing_copy_implementations,
     rustdoc::broken_intra_doc_links
 )]
-
+//! Cyclic iterators, range skip and range step.
 use num::{CheckedAdd, CheckedSub, One, Zero};
 use num_convert::{TryFromByAdd, TryToByAdd};
 use std::cmp::PartialOrd;
@@ -14,6 +14,8 @@ use std::ops::{AddAssign, Range};
 use std::iter::Map;
 
 /// An iterator that sequentially outputs a value in a range skipping n elements.
+///
+/// See the [`range_skip()`] function for more information.
 #[derive(Debug, Clone)]
 pub struct RangeSkip<T> {
     start: T,
@@ -89,6 +91,7 @@ where
         Some(self.start)
     }
 }
+
 /// Creates an iterator that sequentially outputs a value in the range
 /// with a skipping of n elements.
 ///
@@ -101,13 +104,15 @@ where
 /// If the start value is greater than the end value, panic.
 /// Panic if value skip conversion to output type error.
 ///
-///```
+/// # Examples
+///
+/// ```rust
 /// use iter_cyclic::range_skip;
 ///
 /// let vec: Vec<u8> = range_skip(0..5, 200).collect();
 /// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 206, 207, 208, 209, 210, 211]);
 ///
-///```
+/// ```
 #[inline]
 pub fn range_skip<T>(range: Range<T>, skip: usize) -> RangeSkip<T>
 where
@@ -119,6 +124,8 @@ where
 }
 
 /// An iterator that sequentially outputs a value in a range in increments of n elements.
+///
+/// See the [`range_step()`] function for more information.
 #[derive(Copy, Clone, Debug)]
 pub struct RangeStep<T> {
     start: T,
@@ -182,19 +189,21 @@ where
 /// Creates an iterator that sequentially outputs a value in the range
 /// with a step of n elements.
 ///
+/// # Examples
+///
 /// Range,
 ///  start - the lower bound of the range (inclusive),
 ///  end - the upper bound of the range (inclusive).
 /// Step,
 ///  step of n elements.
 ///
-///```
+/// ```rust
 /// use iter_cyclic::range_step;
 ///
 /// let vec: Vec<u8> = range_step(0, 5, 20).take(12).collect();
 /// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 20, 21, 22, 23, 24, 25]);
 ///
-///```
+/// ```
 #[inline]
 pub fn range_step<T>(start: T, stop: T, step: usize) -> RangeStep<T>
 where
@@ -220,6 +229,8 @@ where
 }
 
 /// An iterator that sequentially outputs a value in a range in increments of n elements of type usize.
+///
+/// See the [`range_step_idx()`] function for more information.
 #[derive(Clone, Copy, Debug)]
 pub struct RangeStepIdx {
     start: usize,
@@ -275,14 +286,16 @@ impl Iterator for RangeStepIdx {
 /// End,
 ///  iterator length.
 ///
-///```
+/// # Examples
+///
+/// ```rust
 /// use iter_cyclic::range_step_idx;
 ///
 /// let mut vec: Vec<u8> = (0..=21).collect();
 /// range_step_idx(0, 2, 7, vec.len()).for_each(|idx| { vec[idx] += 10; });
 /// assert_eq!(vec, [10, 11, 12, 3, 4, 5, 6, 17, 18, 19, 10, 11, 12, 13, 24, 25, 26, 17, 18, 19, 20, 21]);
 ///
-///```
+/// ```
 
 /// Creates an iterator of type usize.
 #[inline]
@@ -301,11 +314,53 @@ pub fn range_step_idx(start: usize, stop: usize, step: usize, end: usize) -> Ran
         once_flag: true,
     }
 }
-
+/// Implements range methods (start, stop, step) for a vector.
+///
+/// # Examples
+///
+///```
+/// use iter_cyclic::RangeStepVec;
+///
+/// let mut vec: Vec<u8> = (0..19).collect();
+/// vec.range_step_value(0, 2, 7, 10);
+/// assert_eq!(vec, [10, 10, 10, 3, 4, 5, 6, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+///
+///```
+///
+///```
+/// # use iter_cyclic::RangeStepVec;
+///
+/// let mut vec: Vec<u8> = (0..=21).collect();
+/// vec.range_step_values(0, 2, 7, 0..100);
+/// assert_eq!(vec, [0, 1, 2, 3, 4, 5, 6, 3, 4, 5, 10, 11, 12, 13, 6, 7, 8, 17, 18, 19, 20, 21]);
+///
+///```
+///
+///```
+/// # use iter_cyclic::RangeStepVec;
+///
+/// let vec: Vec<i8> = (-10..=25).collect();
+/// let new_vec = vec.range_step_vec(0, 2, 7);
+/// assert_eq!(new_vec, [-10, -9, -8, -3, -2, -1, 4, 5, 6, 11, 12, 13, 18, 19, 20]);
+///
+///```
+///
+///```
+/// # use iter_cyclic::RangeStepVec;
+///
+/// let vec: Vec<i8> = (-10..24).collect();
+/// let iter = vec.range_step_iter(0, 2, 7);
+/// assert_eq!(iter.collect::<Vec<_>>(), [-10, -9, -8, -3, -2, -1, 4, 5, 6, 11, 12, 13]);
+///
+///```
 pub trait RangeStepVec<T> {
-    fn range_step_val(&mut self, start: usize, stop: usize, step: usize, val: T);
-    fn range_step_combine(&mut self, start: usize, stop: usize, step: usize, iter: impl Iterator<Item = T>);
+    /// Changes the elements of the range (start, stop, step) of the vector to the value of the argument.
+    fn range_step_value(&mut self, start: usize, stop: usize, step: usize, val: T);
+    /// Changes the range elements (start, stop, step) of a vector to iterator values.
+    fn range_step_values(&mut self, start: usize, stop: usize, step: usize, iter: impl Iterator<Item = T>);
+    /// Returns a new allocated vector containing elements in the range (start, stop, step) of the original vector.
     fn range_step_vec(&self, start: usize, stop: usize, step: usize) -> Vec<T>;
+    /// Returns a new iterator containing elements in the range (start, stop, step).
     fn range_step_iter(&self, start: usize, stop: usize, step: usize) ->  Map<RangeStepIdx, Box<dyn Fn(usize) -> T + '_>>;
 }
 
@@ -314,14 +369,14 @@ where
     T: Copy,
 {
     #[inline]
-    fn range_step_val(&mut self, start: usize, stop: usize, step: usize, val: T) {
+    fn range_step_value(&mut self, start: usize, stop: usize, step: usize, val: T) {
         range_step_idx(start, stop, step, self.len()).for_each(|idx| {
             self[idx] = val;
         })
     }
 
     #[inline]
-    fn range_step_combine(&mut self, start: usize, stop: usize, step: usize, mut iter: impl Iterator<Item = T>) {
+    fn range_step_values(&mut self, start: usize, stop: usize, step: usize, mut iter: impl Iterator<Item = T>) {
         for idx in range_step_idx(start, stop, step, self.len()) {
             self[idx] = if let Some(val) = iter.next() { val } else { break; };
         }
@@ -337,7 +392,7 @@ where
         vec
     }
 
-    #[inline]
+    // Dynamic dispatch cannot be inlined.
     fn range_step_iter(&self, start: usize, stop: usize, step: usize) ->  Map<RangeStepIdx, Box<dyn Fn(usize) -> T + '_>> {
         range_step_idx(start, stop, step, self.len()).map(Box::new(|idx| self[idx]))
     }
@@ -400,6 +455,8 @@ impl<T: Copy> Iterator for RangeStepVecIter<T> {
 /// Step,
 ///  step of n elements.
 ///
+/// # Examples
+///
 ///```
 /// use iter_cyclic::RangeStepIter;
 ///
@@ -409,6 +466,7 @@ impl<T: Copy> Iterator for RangeStepVecIter<T> {
 ///
 ///```
 pub trait RangeStepIter<T: Copy> {
+    /// Creates an iterator from a vector.
     fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T>;
 }
 
@@ -416,7 +474,6 @@ impl<T> RangeStepIter<T> for Vec<T>
 where
     T: Copy + 'static,
 {
-    /// Creates an iterator from a vector.
     #[inline]
     fn range_step_iter(self, start: usize, stop: usize, step: usize) -> RangeStepVecIter<T> {
         let end = self.len();
