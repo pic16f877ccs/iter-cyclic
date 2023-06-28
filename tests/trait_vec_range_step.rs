@@ -75,3 +75,19 @@ fn range_step_char_vec() {
     let new_vec = vec.range_step_vec(0, 1, 4);
     assert_eq!(new_vec, ['l', 'i', 'n', 'u', 'x', '!']);
 }
+
+#[test]
+fn range_step_str_vec() {
+    let vec = vec!["Vessel", "big", "yacht", "expensive", "boat", "simple", "longboat", "fishing",
+    "sailboat", "beautiful", "steamboat", "old", "icebreaker", "powerful", "tanker", "long", "ferry", "roomy"];
+    let new_vec = vec.range_step_vec(0, 1, 6);
+    assert_eq!(new_vec, ["Vessel", "big", "longboat", "fishing", "icebreaker", "powerful"]);
+}
+
+#[test]
+fn range_step_tuple_vec() {
+    let vec = vec![("Vessel", "big"), ("yacht", "expensive"), ("boat", "simple"), ("longboat", "fishing"),
+    ("sailboat", "beautiful"), ("steamboat", "old"), ("icebreaker", "powerful"), ("tanker", "long"), ("ferry", "roomy")];
+    let new_vec = vec.range_step_vec(0, 1, 4);
+    assert_eq!(new_vec, [("Vessel", "big"), ("yacht", "expensive"), ("sailboat", "beautiful"), ("steamboat", "old")]);
+}
