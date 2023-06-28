@@ -1,4 +1,10 @@
-use iter_cyclic::RangeStepIter;
+use iter_cyclic::RangeStepVec;
+
+#[test]
+fn empty_vector() {
+    let vec: Vec<char> = Vec::new();
+    assert_eq!(vec.range_step_iter(0, 3, 5).collect::<Vec<_>>(), Vec::<char>::new());
+}
 
 #[test]
 fn step_by_five() {
@@ -40,4 +46,32 @@ fn range_two_step_four() {
 fn range_step_neg() {
     let vec: Vec<i8> = (-10..24).collect();
     assert_eq!(vec.range_step_iter(0, 2, 7).collect::<Vec<_>>(), vec![-10, -9, -8, -3, -2, -1, 4, 5, 6, 11, 12, 13]);
+}
+
+#[test]
+fn range_step_change_vec_value() {
+    let mut vec: Vec<u8> = (0..19).collect();
+    vec.range_step_value(0, 2, 7, 10);
+    assert_eq!(vec, [10, 10, 10, 3, 4, 5, 6, 10, 10, 10, 10, 11, 12, 13, 14, 15, 16, 17, 18]);
+}
+
+#[test]
+fn range_step_change_vec_values() {
+    let mut vec: Vec<u8> = (0..=21).collect();
+    vec.range_step_values(0, 2, 7, 0..100);
+    assert_eq!(vec, [0, 1, 2, 3, 4, 5, 6, 3, 4, 5, 10, 11, 12, 13, 6, 7, 8, 17, 18, 19, 20, 21]);
+}
+
+#[test]
+fn range_step_new_vec() {
+    let vec: Vec<i8> = (-10..=25).collect();
+    let new_vec = vec.range_step_vec(0, 2, 7);
+    assert_eq!(new_vec, [-10, -9, -8, -3, -2, -1, 4, 5, 6, 11, 12, 13, 18, 19, 20]);
+}
+
+#[test]
+fn range_step_char_vec() {
+    let vec: Vec<char> = "lisinumbx!de".chars().collect();
+    let new_vec = vec.range_step_vec(0, 1, 4);
+    assert_eq!(new_vec, ['l', 'i', 'n', 'u', 'x', '!']);
 }
